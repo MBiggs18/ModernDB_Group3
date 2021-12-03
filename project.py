@@ -17,9 +17,9 @@ from consolemenu.items import *
 from pprint import pprint
 
 
-mongoUrl = "mongodb://localhost:27017/"
+mongoUrl = "mongodb+srv://mbiggs:pwd123@cluster0.9uybn.mongodb.net/moderndb?retryWrites=true&w=majority"
 neo4jUrl = "bolt://localhost:7687"
-neo4jDriver = GraphDatabase.driver(neo4jUrl, auth=('neo4j', 'moderndb'))
+neo4jDriver = GraphDatabase.driver(neo4jUrl, auth=('moderndb', 'pwd123'))
 
 mongoDBDatabase = ''
 mongoCollection = ''
@@ -32,8 +32,8 @@ def menu(driver, client):
         # Queries to Execute, calls a function when selected
         first_query = FunctionItem("Test Query 1", driver.print_result1)
         second_query = FunctionItem('Test Query 1', driver.print_result1)
-        third_query = FunctionItem('Test Query 1', driver.print_result1)
-        fourth_query = FunctionItem('Test Query 1', driver.print_result1)
+        third_query = FunctionItem('Test Query 1', client.query1)
+        fourth_query = FunctionItem('Test Query 1', client.query2)
         
         # Can create sub menus for more specific queries
         s_menu = SelectionMenu([])
@@ -68,7 +68,7 @@ if __name__ == "__main__":
     mongoDBDatabase = client['moderndb']
     # mongoCollection = dbname.? # replace ? with collection name
         
-    menu(neo4jdb, client)
+    menu(neo4jdb, mongodb)
     
     neo4jdb.close()
     mongodb.close()

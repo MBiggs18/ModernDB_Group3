@@ -4,12 +4,14 @@ import redis
 
 
 class Neo4jModel:
-    def __init__(self, url='bolt://localhost:7687', user='neo4j', password='moderndb'):
+    def __init__(self, url='bolt://localhost:7687', user='moderndb', password='pwd123'):
         self.neo4jUrl = url;
         self.neo4jDriver = GraphDatabase.driver(url, auth=(user, password))
+        print("Connected to {0} Neo4j Database...".format(url))
 
     def close(self):
         self.neo4jDriver.close()
+        print("Closing Neo4j Database...")
         
     def query1(self, tx):
         X = input("Please enter your userId (0-600):\n")
@@ -43,12 +45,14 @@ class Neo4jModel:
 
 
 class MongoModel:
-    def __init__(self, url='mongodb://localhost:27017/pokemon'):
+    def __init__(self, url="mongodb+srv://mbiggs:pwd123@cluster0.9uybn.mongodb.net/moderndb?retryWrites=true&w=majority"):
         self.mongoUrl = url
         self.mongoClient = MongoClient(url)
+        print("Connected to {0} Mongo Database...".format(self.mongoClient['moderndb'].name))
 
     def close(self):
         self.mongoClient.close()
+        print("Closing Mongo Database...")
         
     def query1(self):
         lat = input("Please enter latitude:\n").strip()
