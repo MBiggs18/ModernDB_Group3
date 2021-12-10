@@ -1,0 +1,37 @@
+#Import processed_vendors.csv
+
+$ mongoimport --db trydb --collection vendors --type csv --headerline --drop --file processed_vendors.csv
+
+
+
+#Import processed_customers.csv
+
+$ mongoimport --db trydb --collection customers --type csv --headerline --drop --file processed_customers.csv
+
+
+
+#Import processed_orders.csv
+
+$ mongoimport --db trydb --collection orders --type csv --headerline --drop --file processed_orders.csv
+
+
+
+#Convert lat and long from string to decimal:
+
+db.runCommand({update: 'vendors',
+updates: [{q: {}, // query selector to match all documents in collection
+u: [ // update of each matched document
+{$set: {geoloc: {"type": "Point", "coordinates": [{$toDecimal: "$longitude"}, {$toDecimal: "$latitude"}]},}},],
+multi: true}]})
+
+
+Index for Query 1:
+
+db.vendors.createIndex({geoloc: "2dsphere" }) 
+
+
+
+Index for Query 2:
+
+db.vendors.ensureIndex({"vendor_tag_name": "text"}, 
+{"name": "tag_text", "default_language": "en", "language_override": "en"})
