@@ -18,8 +18,8 @@ from pprint import pprint
 
 
 mongoUrl = "mongodb+srv://mbiggs:pwd123@cluster0.9uybn.mongodb.net/moderndb?retryWrites=true&w=majority"
-neo4jUrl = "bolt://localhost:7687"
-neo4jDriver = GraphDatabase.driver(neo4jUrl, auth=('moderndb', 'pwd123'))
+neo4jUrl = "neo4j+s://0c0676db.databases.neo4j.io"
+neo4jDriver = GraphDatabase.driver(neo4jUrl, auth=('neo4j', 'Xqn4jBlgR_f9x0FVYBGrtPUEX4bp96WkZaf-D5WCeo0'))
 
 mongoDBDatabase = ''
 mongoCollection = ''
@@ -27,13 +27,13 @@ mongoCollection = ''
 def menu(driver, client):
     try:
         # Create the menu
-        menu = ConsoleMenu("New Guinea Restaurant Recommendations", "Modern Databases Project - Group #3")
+        menu = ConsoleMenu("Local Restaurant Recommendation System", "Modern Databases Project - Group #3")
         
         # Queries to Execute, calls a function when selected
-        first_query = FunctionItem("Test Query 1", driver.print_result1)
-        second_query = FunctionItem('Test Query 1', driver.print_result1)
-        third_query = FunctionItem('Test Query 1', client.query1)
-        fourth_query = FunctionItem('Test Query 1', client.query2)
+        first_query = FunctionItem("Test Query 1 (neo4j)", driver.print_result1)
+        second_query = FunctionItem('Test Query 2 (neo4j)', driver.print_result1)
+        third_query = FunctionItem('Search Text (mongo)', client.searchtext)
+        fourth_query = FunctionItem('Search Vendor (mongo)', client.searchvendor)
         
         # Can create sub menus for more specific queries
         s_menu = SelectionMenu([])
