@@ -38,8 +38,8 @@ class MongoModel:
         print("Closing Mongo Database...")
         
     #Search for top 5 vendors based on keywords
-    def searchtext (client):
-        client = client.mongoClient
+    def searchtext (self):
+        client = self.mongoClient
         db = client.trydb
         userinput = input("Please enter the terms you would like to search with: \n")
     
@@ -56,8 +56,8 @@ class MongoModel:
         return()
     
     #Search for top 5 vendors based on keywords
-    def searchvendor(client):
-        client = client.mongoClient
+    def searchvendor(self):
+        client = self.mongoClient
         db = client.trydb
         long = float(input("Please enter your longitude: \n"))
         lat = float(input("Please enter your latitude: \n"))

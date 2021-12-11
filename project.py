@@ -34,20 +34,11 @@ def menu(driver, client):
         second_query = FunctionItem('Search Restaurants by Keyword(s) (mongo)', client.searchtext)
         third_query = FunctionItem('Search Nearest Vendor by Location (mongo)', client.searchvendor)
         
-        # Can create sub menus for more specific queries
-        # s_menu = SelectionMenu([])
-        # s_menu.append_item(first_query)
-        # s_menu.append_item(second_query)        
-        # submenu = SubmenuItem("Test Submenu", s_menu , menu)
-
         # Create & Order Menu
         menu.append_item(first_query)
         menu.append_item(second_query)
         menu.append_item(third_query)
-        # menu.append_item(fourth_query)
-        # menu.append_item(submenu)
 
-        
         # Display ConsoleMenu
         menu.show()
         
@@ -57,18 +48,14 @@ def menu(driver, client):
     finally:
         print("Closing database connection...\nGoodbye!")
         driver.close()
+        client.close()
 
 if __name__ == "__main__":
+    
     neo4jdb = Neo4jModel()
     driver = neo4jdb.neo4jDriver
     
     mongodb = MongoModel()
     client = mongodb.mongoClient
-    mongoDBDatabase = client['moderndb']
-    # mongoCollection = dbname.? # replace ? with collection name
-        
-    menu(neo4jdb, mongodb)
-    
-    neo4jdb.close()
-    mongodb.close()
 
+    menu(neo4jdb, mongodb)
