@@ -30,23 +30,22 @@ def menu(driver, client):
         menu = ConsoleMenu("Local Restaurant Recommendation System", "Modern Databases Project - Group #3")
         
         # Queries to Execute, calls a function when selected
-        first_query = FunctionItem("Test Query 1 (neo4j)", driver.print_result1)
-        second_query = FunctionItem('Test Query 2 (neo4j)', driver.print_result1)
-        third_query = FunctionItem('Search Text (mongo)', client.searchtext)
-        fourth_query = FunctionItem('Search Vendor (mongo)', client.searchvendor)
+        first_query = FunctionItem("Recommend Restaurants from Similar Customers (neo4j)", driver.print_result1)
+        second_query = FunctionItem('Search Restaurants by Keyword(s) (mongo)', client.searchtext)
+        third_query = FunctionItem('Search Nearest Vendor by Location (mongo)', client.searchvendor)
         
         # Can create sub menus for more specific queries
-        s_menu = SelectionMenu([])
-        s_menu.append_item(first_query)
-        s_menu.append_item(second_query)        
-        submenu = SubmenuItem("Test Submenu", s_menu , menu)
+        # s_menu = SelectionMenu([])
+        # s_menu.append_item(first_query)
+        # s_menu.append_item(second_query)        
+        # submenu = SubmenuItem("Test Submenu", s_menu , menu)
 
         # Create & Order Menu
         menu.append_item(first_query)
         menu.append_item(second_query)
         menu.append_item(third_query)
-        menu.append_item(fourth_query)
-        menu.append_item(submenu)
+        # menu.append_item(fourth_query)
+        # menu.append_item(submenu)
 
         
         # Display ConsoleMenu
