@@ -22,9 +22,42 @@ class Neo4jModel:
 
     
     def query1(self, tx):
-        result = tx.run("MATCH (c:Customer) "
-                        "RETURN c.customerId LIMIT 1  ")
-        return result.single()[0]
+        # result = tx.run("MATCH (c:Customer) "
+        #                 "RETURN c.customerId LIMIT 1  ")
+        # return result.single()[0]
+    
+        X = input("Please enter your userId (0-7455):\n")
+        
+        while(int(X) not in range(0,601)):
+            X = input("User Id must be between 0-7455, try again:")
+        
+        result = tx.run('''WITH %s as X
+                        CALL { 
+                             WITH X
+                             MATCH(c:Customer {customerId:X})-[r:RATED]-(v:Vendor)
+                             RETURN DISTINCT v.vendorId as ids
+                        }
+                        WITH X, ids
+                        MATCH(c:Customer {customerId:X})-[r:RATED]-(v:Vendor)-[i:IN_TAG]-(t:Tag)
+                        WHERE v.vendorId in ids
+                        RETURN t.name;'''.format(X))
+        for record in result:
+            self.username=record.get('n.name')
+            self.userid=record.get('n.customerId')
+       
+        if self.userid != None:
+            if self.username != None:
+                return "Welcome back, " + str(self.username) + "!" 
+            
+            self.username=input("Welcome user {0}, please enter a user name:\n".format(self.userid))
+            result = tx.run("MATCH(n:User) WHERE n.userId={0} SET n.name='{1}' RETURN n.userId, n.name".format(str(self.userid),str(self.username)))
+            
+            for record in result:
+                self.username=record.get('n.name')
+                self.userid=record.get('n.userId')
+            return "Welcome {0}".format(self.username)
+        
+        return "No user {} found...".format(X)
 
 
 class MongoModel:
