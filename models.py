@@ -1,4 +1,5 @@
 from pymongo import MongoClient
+import pymongo
 from neo4j import GraphDatabase
 import redis
 
@@ -22,7 +23,7 @@ class Neo4jModel:
     
     def query1(self, tx):
         result = tx.run("MATCH (c:Customer) "
-                        "RETURN c.customerId LIMIT 1")
+                        "RETURN c.customerId LIMIT 1  ")
         return result.single()[0]
 
 
