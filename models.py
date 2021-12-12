@@ -8,6 +8,8 @@ class Neo4jModel:
     def __init__(self, url='neo4j+s://0c0676db.databases.neo4j.io', user='neo4j', password='Xqn4jBlgR_f9x0FVYBGrtPUEX4bp96WkZaf-D5WCeo0'):
         self.neo4jUrl = url;
         self.neo4jDriver = GraphDatabase.driver(url, auth=(user, password))
+        self.customerId = ''
+        self.tags = list()
         print("Connected to {0} Neo4j Database...".format(url))
 
     def close(self):
@@ -21,44 +23,35 @@ class Neo4jModel:
             print(greeting)
 
     
-    def query1(self, tx):
-        # result = tx.run("MATCH (c:Customer) "
-        #                 "RETURN c.customerId LIMIT 1  ")
-        # return result.single()[0]
-    
-        X = input("Please enter your userId (0-7455):\n")
+    def query1(self, tx):   
+        X = input("Please enter your customerId (7 character code):\n")
+        result = tx.run("MATCH (n:Customer) WHERE n.customerId='{0}' RETURN n.customerId LIMIT 25".format(X))
         
-        while(int(X) not in range(0,601)):
-            X = input("User Id must be between 0-7455, try again:")
-        
-        result = tx.run('''WITH %s as X
-                        CALL { 
-                             WITH X
-                             MATCH(c:Customer {customerId:X})-[r:RATED]-(v:Vendor)
-                             RETURN DISTINCT v.vendorId as ids
-                        }
-                        WITH X, ids
-                        MATCH(c:Customer {customerId:X})-[r:RATED]-(v:Vendor)-[i:IN_TAG]-(t:Tag)
-                        WHERE v.vendorId in ids
-                        RETURN t.name;'''.format(X))
         for record in result:
-            self.username=record.get('n.name')
-            self.userid=record.get('n.customerId')
+            self.customerId=record.get('n.customerId')
        
-        if self.userid != None:
-            if self.username != None:
-                return "Welcome back, " + str(self.username) + "!" 
-            
-            self.username=input("Welcome user {0}, please enter a user name:\n".format(self.userid))
-            result = tx.run("MATCH(n:User) WHERE n.userId={0} SET n.name='{1}' RETURN n.userId, n.name".format(str(self.userid),str(self.username)))
-            
-            for record in result:
-                self.username=record.get('n.name')
-                self.userid=record.get('n.userId')
-            return "Welcome {0}".format(self.username)
+        if(self.customerId==''):
+            return "No user found, try again."
         
-        return "No user {} found...".format(X)
-
+        print("User {0} found!".format(self.customerId))
+        query = '''WITH '%s' as X
+                    CALL { 
+                         WITH X
+                         MATCH(c:Customer {customerId:X})-[r:RATED]-(v:Vendor)
+                         RETURN DISTINCT v.vendorId as ids
+                    }
+                    WITH X, ids
+                    MATCH(c:Customer {customerId:X})-[r:RATED]-(v:Vendor)-[i:IN_TAG]-(t:Tag)
+                    WHERE v.vendorId in ids
+                    RETURN X, t.name;''' % (str(self.customerId))
+            
+        result = tx.run(query)
+        for record in result:
+            self.username=record.get('X')
+            self.tags.append(record.get('t.name'))
+            
+        return "Welcome {0}, you rated these tags: {1}".format(self.username, self.tags)
+    
 
 class MongoModel:
     def __init__(self, url="mongodb+srv://mbiggs:pwd123@cluster0.9uybn.mongodb.net/moderndb?retryWrites=true&w=majority"):
