@@ -2,7 +2,8 @@ from pymongo import MongoClient
 import pymongo
 from neo4j import GraphDatabase
 import redis
-
+import pandas as pd
+pd.set_option('display.max_columns', 500)
 
 class Neo4jModel:
     def __init__(self, url='neo4j+s://0c0676db.databases.neo4j.io', user='neo4j', password='Xqn4jBlgR_f9x0FVYBGrtPUEX4bp96WkZaf-D5WCeo0'):
@@ -19,13 +20,13 @@ class Neo4jModel:
         print("Closing Neo4j Database...")
         
         
-    def print_result1(self):
+    def print_result(self):
         with self.neo4jDriver.session() as session:
-            greeting = session.write_transaction(self.query1)
+            greeting = session.write_transaction(self.get_user_rec_vendors)
             print(greeting)
 
     
-    def query1(self, tx):   
+    def get_user_rec_vendors(self, tx):   
         X = input("Please enter your customerId (7 character code):\n")
         result = tx.run("MATCH (n:Customer) WHERE n.customerId='{0}' RETURN n.customerId".format(X))
         
@@ -47,12 +48,15 @@ class Neo4jModel:
                     RETURN c.customerId as customer, top, vendor;''' % (str(self.customerId))
             
         result = tx.run(query)
-        for record in result:
-            self.username=record.get('customer')
-            self.usratings.append(record.get('top'))
-            self.topvendors.append(record.get('vendor'))
+        print("RESULTS:")
+        top_vendors = pd.DataFrame([dict(record) for record in result])
+        return top_vendors
+        # for record in result:
+        #     self.username=record.get('customer')
+        #     self.usratings.append(record.get('top'))
+        #     self.topvendors.append(record.get('vendor'))
             
-        return "Welcome {0}, peer recommended vendors: {1}, {2}".format(self.username, self.usratings, self.topvendors)
+        # return "Welcome {0}, peer recommended vendors: {1}, {2}".format(self.username, self.usratings, self.topvendors)
     
 
 class MongoModel:
@@ -76,12 +80,21 @@ class MongoModel:
         "is_akeed_delivering": 1, 
         "categories": 1, "review_count": 1, "score": {"$meta": "textScore"}}).sort("score", pymongo.ASCENDING).limit(5) 
     
-        for doc in myquery:
-            print("\n")
-            print(doc)
-            print("\n")
+        # for doc in myquery:
+        #     print("\n")
+        #     print(doc)
+        #     print("\n")
         
-        return()
+        # return()
+        
+        print("RESULTS:")
+        top_vendors = pd.DataFrame([dict(record) for record in myquery])
+        return top_vendors
+    
+    def printtext(self):
+        greeting = self.searchtext()
+        print(greeting)
+
     
     #Search for top 5 vendors based on keywords
     def searchvendor(self):
@@ -92,10 +105,18 @@ class MongoModel:
         myquery = db.vendors.find({"geoloc": 
             {"$near": {"$geometry": {"type": "Point", "coordinates": [long, lat]}}}},
             {'_id': 0, "name": 1, "address": 1, "city": 1, "state": 1, "stars": 1, "categories": 1, "review_count": 1}).limit(5)
-        for doc in myquery:
-            print("\n")
-            print(doc)
-            print("\n")
+        # for doc in myquery:
+        #     print("\n")
+        #     print(doc)
+        #     print("\n")
         
-        return()
+        # return()
+        print("RESULTS:")
+        top_vendors = pd.DataFrame([dict(record) for record in myquery])
+        return top_vendors
+        
+        
+    def printloc(self):
+        greeting = self.searchvendor()
+        print(greeting)
 
