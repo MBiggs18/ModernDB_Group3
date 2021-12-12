@@ -9,7 +9,9 @@ class Neo4jModel:
         self.neo4jUrl = url;
         self.neo4jDriver = GraphDatabase.driver(url, auth=(user, password))
         self.customerId = ''
+        self.topvendors = list()
         self.tags = list()
+        self.usratings = list()
         print("Connected to {0} Neo4j Database...".format(url))
 
     def close(self):
@@ -25,7 +27,7 @@ class Neo4jModel:
     
     def query1(self, tx):   
         X = input("Please enter your customerId (7 character code):\n")
-        result = tx.run("MATCH (n:Customer) WHERE n.customerId='{0}' RETURN n.customerId LIMIT 25".format(X))
+        result = tx.run("MATCH (n:Customer) WHERE n.customerId='{0}' RETURN n.customerId".format(X))
         
         for record in result:
             self.customerId=record.get('n.customerId')
@@ -34,23 +36,23 @@ class Neo4jModel:
             return "No user found, try again."
         
         print("User {0} found!".format(self.customerId))
-        query = '''WITH '%s' as X
-                    CALL { 
-                         WITH X
-                         MATCH(c:Customer {customerId:X})-[r:RATED]-(v:Vendor)
-                         RETURN DISTINCT v.vendorId as ids
-                    }
-                    WITH X, ids
-                    MATCH(c:Customer {customerId:X})-[r:RATED]-(v:Vendor)-[i:IN_TAG]-(t:Tag)
-                    WHERE v.vendorId in ids
-                    RETURN X, t.name;''' % (str(self.customerId))
+        query = ''' WITH ['%s', 'BRTO1KT'] as X
+                    MATCH(c:Customer)-[r:RATED]-(v:Vendor)
+                    WHERE c.customerId IN X
+                    WITH c, r, v
+                    ORDER BY r.rating DESC 
+                    WITH c, collect(r.rating) AS rating, collect(v.vendorId) as ids
+                    UNWIND rating[0] AS top
+                    UNWIND ids[0] as vendor
+                    RETURN c.customerId as customer, top, vendor;''' % (str(self.customerId))
             
         result = tx.run(query)
         for record in result:
-            self.username=record.get('X')
-            self.tags.append(record.get('t.name'))
+            self.username=record.get('customer')
+            self.usratings.append(record.get('top'))
+            self.topvendors.append(record.get('vendor'))
             
-        return "Welcome {0}, you rated these tags: {1}".format(self.username, self.tags)
+        return "Welcome {0}, peer recommended vendors: {1}, {2}".format(self.username, self.usratings, self.topvendors)
     
 
 class MongoModel:
