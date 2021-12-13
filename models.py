@@ -52,14 +52,17 @@ class Neo4jModel:
         result = tx.run(query)
         print("RESULTS:")
         top_vendors = pd.DataFrame([dict(record) for record in result])
-        return top_vendors
+        return top_vendors #To comment out?
         # for record in result:
         #     self.username=record.get('customer')
         #     self.usratings.append(record.get('top'))
         #     self.topvendors.append(record.get('vendor'))
             
         # return "Welcome {0}, peer recommended vendors: {1}, {2}".format(self.username, self.usratings, self.topvendors)
-    
+        
+        #Function call to retrieve vendor details:
+        vendorDetails (top_vendors) #To be verified
+        
 
 class MongoModel:
     def __init__(self, url="mongodb+srv://mbiggs:pwd123@cluster0.9uybn.mongodb.net/moderndb?retryWrites=true&w=majority"):
@@ -78,16 +81,8 @@ class MongoModel:
         userinput = input("Please enter the terms you would like to search with: \n")
     
         myquery = db.vendors.find({"$text": {"$search": userinput}},
-        {"_id": 0, "vendor_tag_name": 1, "vendor_rating": 1, "OpeningTime": 1, "preparation_time": 1,
-        "is_akeed_delivering": 1, 
-        "categories": 1, "review_count": 1, "score": {"$meta": "textScore"}}).sort("score", pymongo.ASCENDING).limit(5) 
-    
-        # for doc in myquery:
-        #     print("\n")
-        #     print(doc)
-        #     print("\n")
-        
-        # return()
+        {"_id": 0, "vendor_tag_name": 1, "vendor_rating": 1, "OpeningTime": 1, "preparation_time": 1, "is_akeed_delivering": 1, 
+        "score": {"$meta": "textScore"}}).sort("score", pymongo.ASCENDING).limit(5) 
         
         print("RESULTS:")
         top_vendors = pd.DataFrame([dict(record) for record in myquery])
@@ -106,17 +101,25 @@ class MongoModel:
         lat = float(input("Please enter your latitude: \n"))
         myquery = db.vendors.find({"geoloc": 
             {"$near": {"$geometry": {"type": "Point", "coordinates": [long, lat]}}}},
-            {'_id': 0, "name": 1, "address": 1, "city": 1, "state": 1, "stars": 1, "categories": 1, "review_count": 1}).limit(5)
-        # for doc in myquery:
-        #     print("\n")
-        #     print(doc)
-        #     print("\n")
+            {"_id": 0, "vendor_tag_name": 1, "vendor_rating": 1, "OpeningTime": 1, "preparation_time": 1, "is_akeed_delivering": 1}).limit(5)
         
-        # return()
         print("RESULTS:")
         top_vendors = pd.DataFrame([dict(record) for record in myquery])
         return top_vendors
+     
+    
+    
+    #retrieve vendor details
+    def vendorDetails(somevendors):
+        client = self.mongoClient
+        db = client.trydb
+        for v.vendorId in somevendors:
+        	myquery = db.vendors.find({"id": v.vendorId},
+        	{"_id": 0, "vendor_tag_name": 1, "vendor_rating": 1, "OpeningTime": 1, "preparation_time": 1, "is_akeed_delivering": 1})
+      
+        	print(myquery)
         
+        return ()
         
     def printloc(self):
         greeting = self.searchvendor()
