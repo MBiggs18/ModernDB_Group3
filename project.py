@@ -47,9 +47,10 @@ def menu(driver, client):
         print("Fatal db error... closing menu... \nPlease make sure the input parameters are in the correct format!!")
     
     finally:
-        print("Closing database connection...\nGoodbye!")
+        print("Closing database connections...")
         driver.close()
         client.close()
+        print("Good-bye!")
 
 if __name__ == "__main__":
     

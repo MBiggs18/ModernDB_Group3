@@ -37,15 +37,17 @@ class Neo4jModel:
             return "No user found, try again."
         
         print("User {0} found!".format(self.customerId))
-        query = ''' WITH ['%s', 'BRTO1KT'] as X
+        query = ''' MATCH (c1:Customer{customerId:'%s'})-[s:SIMILARITY]->(c2:Customer)
+                    WHERE c1<>c2
+                    WITH s.score as score, collect(c2.customerId) as top_user, c1.customerId as user  ORDER BY s.score
                     MATCH(c:Customer)-[r:RATED]-(v:Vendor)
-                    WHERE c.customerId IN X
-                    WITH c, r, v
-                    ORDER BY r.rating DESC 
-                    WITH c, collect(r.rating) AS rating, collect(v.vendorId) as ids
-                    UNWIND rating[0] AS top
+                    WHERE c.customerId IN top_user
+                    WITH c, r, v, top_user, score
+                    ORDER BY r.rating DESC
+                    WITH c, collect(r.rating) AS rating, collect(v.vendorId) as ids, score
+                    UNWIND rating[0] AS rated
                     UNWIND ids[0] as vendor
-                    RETURN c.customerId as customer, top, vendor;''' % (str(self.customerId))
+                    RETURN c.customerId as customer, rated, vendor, score ORDER BY score DESC;''' % (str(self.customerId))
             
         result = tx.run(query)
         print("RESULTS:")
