@@ -6,7 +6,7 @@ import pandas as pd
 pd.set_option('display.max_columns', 500)
 
 class Neo4jModel:
-    def __init__(self, url='neo4j+s://0c0676db.databases.neo4j.io', user='neo4j', password='Xqn4jBlgR_f9x0FVYBGrtPUEX4bp96WkZaf-D5WCeo0'):
+    def __init__(self, url='neo4j+s://4b6f243a.databases.neo4j.io', user='neo4j', password='LuJr8P8GUMD9Kbuyb3LBVuc8S_3BpqTx91UUVDmJ0SI'):
         self.neo4jUrl = url
         self.neo4jDriver = GraphDatabase.driver(url, auth=(user, password))
         self.customerId = ''
