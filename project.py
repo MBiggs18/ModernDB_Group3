@@ -16,13 +16,14 @@ from consolemenu import *
 from consolemenu.items import *
 from pprint import pprint
 
-
+'''
 mongoUrl = "mongodb+srv://mbiggs:pwd123@cluster0.9uybn.mongodb.net/moderndb?retryWrites=true&w=majority"
 neo4jUrl = "neo4j+s://0c0676db.databases.neo4j.io"
 neo4jDriver = GraphDatabase.driver(neo4jUrl, auth=('neo4j', 'Xqn4jBlgR_f9x0FVYBGrtPUEX4bp96WkZaf-D5WCeo0'))
 
 mongoDBDatabase = ''
 mongoCollection = ''
+'''
 
 def menu(driver, client):
     try:
@@ -59,3 +60,4 @@ if __name__ == "__main__":
     client = mongodb.mongoClient
 
     menu(neo4jdb, mongodb)
+    
