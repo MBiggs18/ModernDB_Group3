@@ -47,14 +47,16 @@ class Neo4jModel:
                     WITH c, collect(r.rating) AS rating, collect(v.vendorId) as ids, score
                     UNWIND rating[0] AS rated
                     UNWIND ids[0] as vendor
-                    RETURN c.customerId as customer, rated, vendor, score ORDER BY score DESC;''' % (str(self.customerId))
+                    RETURN c.customerId as customer, rated, vendor, score ORDER BY score DESC LIMTI 5;''' % (str(self.customerId))
             
         result = tx.run(query)
         print("RESULTS:")
         top_vendors = pd.DataFrame([dict(record) for record in result])
+        if top_vendors.empty:
+            return "No results matching your search, sorry!"
       
-        vendor_info = vendorDetails(top_vendors['vendor'].tolist())
-        return vendor_info
+        # vendor_info = vendorDetails(top_vendors['vendor'].tolist())
+        return top_vendors
         
 
 class MongoModel:
