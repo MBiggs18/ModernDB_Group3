@@ -52,16 +52,9 @@ class Neo4jModel:
         result = tx.run(query)
         print("RESULTS:")
         top_vendors = pd.DataFrame([dict(record) for record in result])
-        return top_vendors #To comment out?
-        # for record in result:
-        #     self.username=record.get('customer')
-        #     self.usratings.append(record.get('top'))
-        #     self.topvendors.append(record.get('vendor'))
-            
-        # return "Welcome {0}, peer recommended vendors: {1}, {2}".format(self.username, self.usratings, self.topvendors)
-        
-        #Function call to retrieve vendor details:
-        vendorDetails (top_vendors) #To be verified
+      
+        vendor_info = vendorDetails(top_vendors['vendor'].tolist())
+        return vendor_info
         
 
 class MongoModel:
@@ -118,8 +111,10 @@ class MongoModel:
         	{"_id": 0, "vendor_tag_name": 1, "vendor_rating": 1, "OpeningTime": 1, "preparation_time": 1, "is_akeed_delivering": 1})
       
         	print(myquery)
-        
-        return ()
+       
+        print("RESULTS:")
+        vendor_info = pd.DataFrame([dict(record) for record in myquery])
+        return vendor_info
         
     def printloc(self):
         greeting = self.searchvendor()
