@@ -39,7 +39,7 @@ class Neo4jModel:
         print("User {0} found!".format(self.customerId))
         query = ''' MATCH (c1:Customer{customerId:'%s'})-[s:SIMILARITY]->(c2:Customer)
                     WHERE c1<>c2
-                    WITH s.score as score, collect(c2.customerId) as top_user, c1.customerId as user  ORDER BY s.score
+                    WITH s.score as score, collect(c2.customerId) as top_user ORDER BY s.score
                     MATCH(c:Customer)-[r:RATED]-(v:Vendor)
                     WHERE c.customerId IN top_user
                     WITH c, r, v, top_user, score
@@ -79,6 +79,8 @@ class MongoModel:
         
         print("RESULTS:")
         top_vendors = pd.DataFrame([dict(record) for record in myquery])
+        if top_vendors.empty:
+            return "No results matching your search, sorry!"
         return top_vendors
     
     def printtext(self):
@@ -98,6 +100,8 @@ class MongoModel:
         
         print("RESULTS:")
         top_vendors = pd.DataFrame([dict(record) for record in myquery])
+        if top_vendors.empty:
+            return "No results matching your search, sorry!"
         return top_vendors
      
     
@@ -114,6 +118,8 @@ class MongoModel:
        
         print("RESULTS:")
         vendor_info = pd.DataFrame([dict(record) for record in myquery])
+        if vendor_info.empty:
+            return "No results matching your search, sorry!"
         return vendor_info
         
     def printloc(self):
