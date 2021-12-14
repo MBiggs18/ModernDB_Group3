@@ -1,7 +1,5 @@
 from pymongo import MongoClient
-import pymongo
 from neo4j import GraphDatabase
-import redis
 import pandas as pd
 pd.set_option('display.max_columns', 500)
 
@@ -23,11 +21,12 @@ class Neo4jModel:
     def print_result(self, client):
         with self.neo4jDriver.session() as session:
             top_vendors = session.write_transaction(self.get_user_rec_vendors)
-            print(top_vendors)
-            print(top_vendors['vendor'].tolist())
+            #print(top_vendors)
+            #print(top_vendors['vendor'].tolist())
+            
             vendor_info = client.vendordetails(top_vendors['vendor'].tolist())
-            print(vendor_info)
-            greeting = pd.concat([top_vendors, vendor_info], axis=0)
+            #print(vendor_info)
+            greeting = pd.concat([top_vendors, vendor_info], axis=1)
             print(greeting)
 
     
@@ -55,7 +54,7 @@ class Neo4jModel:
                     RETURN c.customerId as customer, rated, vendor, score ORDER BY score DESC LIMIT 5;''' % (str(self.customerId))
             
         result = tx.run(query)
-        print("RESULTS:")
+        # print("RESULTS:")
         top_vendors = pd.DataFrame([dict(record) for record in result])
         if top_vendors.empty:
             return "No results matching your search, sorry!"
@@ -67,6 +66,7 @@ class MongoModel:
     def __init__(self, url="mongodb+srv://mbiggs:pwd123@cluster0.9uybn.mongodb.net/moderndb?retryWrites=true&w=majority"):
         self.mongoUrl = url
         self.mongoClient = MongoClient(url)
+        #self.mongoClient = MongoClient(port=27017)
         print("Connected to {0} Mongo Database...".format(self.mongoClient['moderndb'].name))
 
     def close(self):
@@ -81,7 +81,8 @@ class MongoModel:
     
         myquery = db.vendors.find({"$text": {"$search": userinput}},
         {"_id": 0, "vendor_tag_name": 1, "vendor_rating": 1, "OpeningTime": 1, "preparation_time": 1, "is_akeed_delivering": 1, 
-        "score": {"$meta": "textScore"}}).sort("score", pymongo.ASCENDING).limit(5) 
+        "score": {"$meta": "textScore"}}).limit(5)
+        myquery.sort([('score', {'$meta': 'textScore'})])
         
         print("RESULTS:")
         top_vendors = pd.DataFrame([dict(record) for record in myquery])
@@ -112,15 +113,16 @@ class MongoModel:
      
 
     #retrieve vendor details
-    def vendordetails(self,vendor_info):
+    def vendordetails(self, vendor_info):
         client = self.mongoClient
         db = client.trydb
         # for v.vendorId in somevendors:
-       	myquery = db.vendors.aggregate([{"$match":{"v.vendorId": {"$in": vendor_info}}},
-                   {"$project": {"_id": 0, "vendor_tag_name": 1, "vendor_rating": 1, "OpeningTime": 1,
-                   "preparation_time": 1, "is_akeed_delivering": 1}}])
+       	myquery = db.vendors.aggregate([{"$match": {"id": {"$in": vendor_info}}},
+                                        {"$project": {"_id": 0, "vendor_tags": "$vendor_tag_name", "rating": "$vendor_rating", "OpeningTime": "$OpeningTime",
+                                                      "preparation_time": "$preparation_time", "delivery": "$is_akeed_delivering"}}])
+
      
-        	# print(myquery)
+        # print(myquery)
        
         print("RESULTS:")
         vendor_info = pd.DataFrame([dict(record) for record in myquery])
