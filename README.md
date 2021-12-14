@@ -14,10 +14,14 @@ How Neo4j and MongoDB database is created:
 - [project](project.py) (Start with this one).
 
 You will need to install the following libraries to run the project:
-
 ```
 pip install pymongo
 pip install neo4j
 pip install pandas
 pip install console-menu
+```
+
+To run the project:
+```
+python3 project.py
 ```
