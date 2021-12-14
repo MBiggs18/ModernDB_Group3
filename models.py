@@ -21,11 +21,7 @@ class Neo4jModel:
     def print_result(self, client):
         with self.neo4jDriver.session() as session:
             top_vendors = session.write_transaction(self.get_user_rec_vendors)
-            #print(top_vendors)
-            #print(top_vendors['vendor'].tolist())
-            
             vendor_info = client.vendordetails(top_vendors['vendor'].tolist())
-            #print(vendor_info)
             greeting = pd.concat([top_vendors, vendor_info], axis=1)
             print(greeting)
 
@@ -54,7 +50,6 @@ class Neo4jModel:
                     RETURN c.customerId as customer, rated, vendor, score ORDER BY score DESC LIMIT 5;''' % (str(self.customerId))
             
         result = tx.run(query)
-        # print("RESULTS:")
         top_vendors = pd.DataFrame([dict(record) for record in result])
         if top_vendors.empty:
             return "No results matching your search, sorry!"
@@ -116,13 +111,9 @@ class MongoModel:
     def vendordetails(self, vendor_info):
         client = self.mongoClient
         db = client.trydb
-        # for v.vendorId in somevendors:
        	myquery = db.vendors.aggregate([{"$match": {"id": {"$in": vendor_info}}},
                                         {"$project": {"_id": 0, "vendor_tags": "$vendor_tag_name", "rating": "$vendor_rating", "OpeningTime": "$OpeningTime",
                                                       "preparation_time": "$preparation_time", "delivery": "$is_akeed_delivering"}}])
-
-     
-        # print(myquery)
        
         print("RESULTS:")
         vendor_info = pd.DataFrame([dict(record) for record in myquery])
