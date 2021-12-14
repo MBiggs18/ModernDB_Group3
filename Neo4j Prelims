@@ -1,6 +1,6 @@
 Neo4j Prelims for restaurant recommendation project
 
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
 
 # Load customers, vendors from CSV files and create (v:Vendor)-[it:IN_TAG]->(t:Tag) and (c:Customer)-[r:RATED]->(v:Vendor)
 
