@@ -31,7 +31,7 @@ def menu(driver, client):
         menu = ConsoleMenu("Local Restaurant Recommendation System", "Modern Databases Project - Group #3")
         
         # Queries to Execute, calls a function when selected
-        first_query = FunctionItem("Recommend Restaurants from Similar Customers (neo4j)", driver.print_result)
+        first_query = FunctionItem("Recommend Restaurants from Similar Customers (neo4j)", driver.print_result(client))
         second_query = FunctionItem('Search Restaurants by Keyword(s) (mongo)', client.printtext)
         third_query = FunctionItem('Search Nearest Vendor by Location (mongo)', client.printloc)
         

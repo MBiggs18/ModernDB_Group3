@@ -20,9 +20,14 @@ class Neo4jModel:
         print("Closing Neo4j Database...")
         
         
-    def print_result(self):
+    def print_result(self, client):
         with self.neo4jDriver.session() as session:
-            greeting = session.write_transaction(self.get_user_rec_vendors)
+            top_vendors = session.write_transaction(self.get_user_rec_vendors)
+            print(top_vendors)
+            print(top_vendors['vendor'].tolist())
+            vendor_info = client.vendordetails(top_vendors['vendor'].tolist())
+            print(vendor_info)
+            greeting = pd.concat([top_vendors, vendor_info], axis=0)
             print(greeting)
 
     
@@ -47,15 +52,14 @@ class Neo4jModel:
                     WITH c, collect(r.rating) AS rating, collect(v.vendorId) as ids, score
                     UNWIND rating[0] AS rated
                     UNWIND ids[0] as vendor
-                    RETURN c.customerId as customer, rated, vendor, score ORDER BY score DESC LIMTI 5;''' % (str(self.customerId))
+                    RETURN c.customerId as customer, rated, vendor, score ORDER BY score DESC LIMIT 5;''' % (str(self.customerId))
             
         result = tx.run(query)
         print("RESULTS:")
         top_vendors = pd.DataFrame([dict(record) for record in result])
         if top_vendors.empty:
             return "No results matching your search, sorry!"
-      
-        # vendor_info = vendorDetails(top_vendors['vendor'].tolist())
+
         return top_vendors
         
 
@@ -106,17 +110,17 @@ class MongoModel:
             return "No results matching your search, sorry!"
         return top_vendors
      
-    
-    
+
     #retrieve vendor details
-    def vendorDetails(somevendors):
+    def vendordetails(self,vendor_info):
         client = self.mongoClient
         db = client.trydb
-        for v.vendorId in somevendors:
-        	myquery = db.vendors.find({"id": v.vendorId},
-        	{"_id": 0, "vendor_tag_name": 1, "vendor_rating": 1, "OpeningTime": 1, "preparation_time": 1, "is_akeed_delivering": 1})
-      
-        	print(myquery)
+        # for v.vendorId in somevendors:
+       	myquery = db.vendors.aggregate([{"$match":{"v.vendorId": {"$in": vendor_info}}},
+                   {"$project": {"_id": 0, "vendor_tag_name": 1, "vendor_rating": 1, "OpeningTime": 1,
+                   "preparation_time": 1, "is_akeed_delivering": 1}}])
+     
+        	# print(myquery)
        
         print("RESULTS:")
         vendor_info = pd.DataFrame([dict(record) for record in myquery])
