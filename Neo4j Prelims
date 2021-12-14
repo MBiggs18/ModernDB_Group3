@@ -1,0 +1,73 @@
+Neo4j Prelims for restaurant recommendation project
+
+-------------------------------------------------------------------------------
+
+# Load customers, vendors from CSV files and create (v:Vendor)-[it:IN_TAG]->(t:Tag) and (c:Customer)-[r:RATED]->(v:Vendor)
+
+:auto USING PERIODIC COMMIT 500
+LOAD CSV WITH HEADERS FROM "file:///processed_customers.csv" AS row
+MERGE (c:Customer {customerId: row.customer_id, digitId: toInteger(row.digit_id)})
+
+:auto USING PERIODIC COMMIT 500
+LOAD CSV WITH HEADERS FROM "file:///processed_vendors.csv" AS row
+MERGE (v:Vendor {vendorId: toInteger(row.id), lat: toFloat(row.latitude), long: toFloat(row.longitude)})
+WITH v, row
+UNWIND split(row.vendor_tag_name, ',') AS tags
+MERGE (t:Tag {name: tags})
+MERGE (v)-[r:IN_TAG]->(t);
+
+:auto USING PERIODIC COMMIT 500
+LOAD CSV WITH HEADERS FROM "file:///processed_orders.csv" AS row
+MERGE (c:Customer {customerId: row.customer_id})
+MERGE (v:Vendor {vendorId: toInteger(row.vendor_id)})
+with c, v, row
+MERGE (c)-[r:RATED {rating: toInteger(row.vendor_rating)}]->(v);
+
+--------------------------------------------------------------------------------------------------------------------
+
+# Create jaccard similarity between users (Set similarity > 0.6 to reduce size of the created reations)
+
+MATCH (c1:Customer)-[r:RATED]->(v:Vendor)-[i:IN_TAG]->(t:Tag)<-[i2:IN_TAG]-(v2:Vendor)<-[r2:RATED]-(c2:Customer)
+
+WHERE c1 <> c2
+
+WITH c1,c2
+
+CALL { 
+
+         WITH c1
+
+         MATCH(c1)-[r:RATED]-(v:Vendor)-[i:IN_TAG]-(t:Tag)
+
+         RETURN DISTINCT collect(id(t)) as tags
+
+    }
+
+WITH c1,c2,tags
+
+CALL { 
+
+         WITH c2
+
+         MATCH(c2)-[r:RATED]-(v:Vendor)-[i:IN_TAG]-(t:Tag)
+
+         RETURN DISTINCT collect(id(t)) as tags2
+
+    }
+
+WITH c1, c2, tags, tags2, gds.alpha.similarity.jaccard(tags, tags2) AS simscore
+
+WHERE simscore > 0.8
+
+CREATE (c1)-[s:SIMILARITY {score:simscore}]->(c2)
+
+RETURN DISTINCT c1.customerId, c2.customerId, tags, tags2, simscore as score;
+
+--------------------------------------------------------------------------------------------------------------------
+
+# Delete redundant relations
+
+match ()-[r]->() 
+match (s)-[r]->(e) 
+with s,e,type(r) as typ, tail(collect(r)) as coll 
+foreach(x in coll | delete x)
