@@ -2,7 +2,7 @@ from pymongo import MongoClient
 from neo4j import GraphDatabase
 import pandas as pd
 pd.set_option('display.max_columns', 500)
-
+#
 class Neo4jModel:
     def __init__(self, url='neo4j+s://0c0676db.databases.neo4j.io', user='neo4j', password='Xqn4jBlgR_f9x0FVYBGrtPUEX4bp96WkZaf-D5WCeo0'):
         self.neo4jUrl = url
