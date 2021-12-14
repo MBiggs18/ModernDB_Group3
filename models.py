@@ -2,7 +2,7 @@ from pymongo import MongoClient
 from neo4j import GraphDatabase
 import pandas as pd
 pd.set_option('display.max_columns', 500)
-#
+
 class Neo4jModel:
     def __init__(self, url='neo4j+s://0c0676db.databases.neo4j.io', user='neo4j', password='Xqn4jBlgR_f9x0FVYBGrtPUEX4bp96WkZaf-D5WCeo0'):
         self.neo4jUrl = url
@@ -21,20 +21,29 @@ class Neo4jModel:
     def print_result(self, client):
         with self.neo4jDriver.session() as session:
             top_vendors = session.write_transaction(self.get_user_rec_vendors)
-            vendor_info = client.vendordetails(top_vendors['vendor'].tolist())
-            greeting = pd.concat([top_vendors, vendor_info], axis=1)
-            print(greeting)
+            if isinstance(top_vendors, str):
+                greeting = "Wrong Username, please enter again!"
+                print(greeting)
+            else:
+                vendor_info = client.vendordetails(top_vendors['vendor'].tolist())
+                greeting = pd.concat([top_vendors, vendor_info], axis=1)
+                print(greeting)
 
     
     def get_user_rec_vendors(self, tx):   
         X = input("Please enter your customerId (7 character code):\n")
-        result = tx.run("MATCH (n:Customer) WHERE n.customerId='{0}' RETURN n.customerId".format(X))
         
+
+        result = tx.run("OPTIONAL MATCH (n:Customer) WHERE n.customerId='{0}' RETURN n.customerId".format(X))
+        
+            
         for record in result:
             self.customerId=record.get('n.customerId')
+            
+        print(self.customerId)
        
-        if(self.customerId==''):
-            return "No user found, try again."
+        if(self.customerId == None):
+            return "No results matching your search, sorry!"
         
         print("User {0} found!".format(self.customerId))
         query = ''' MATCH (c1:Customer{customerId:'%s'})-[s:SIMILARITY]->(c2:Customer)
@@ -60,8 +69,8 @@ class Neo4jModel:
 class MongoModel:
     def __init__(self, url="mongodb+srv://mbiggs:pwd123@cluster0.9uybn.mongodb.net/moderndb?retryWrites=true&w=majority"):
         self.mongoUrl = url
-        self.mongoClient = MongoClient(url)
-        #self.mongoClient = MongoClient(port=27017)
+        #self.mongoClient = MongoClient(url)
+        self.mongoClient = MongoClient(port=27017)
         print("Connected to {0} Mongo Database...".format(self.mongoClient['moderndb'].name))
 
     def close(self):
@@ -119,6 +128,7 @@ class MongoModel:
         vendor_info = pd.DataFrame([dict(record) for record in myquery])
         if vendor_info.empty:
             return "No results matching your search, sorry!"
+        print(vendor_info)
         return vendor_info
         
     def printloc(self):
